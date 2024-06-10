@@ -1,54 +1,79 @@
-// ContactForm.js
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import "./Style.css";
 
 class ContactForm extends Component {
   state = {
     name: "",
     number: "",
+    error: "",
   };
 
+  // Obsługa zmiany wartości w polach formularza
   handleChange = (e) => {
-    const { name, value } = e.currentTarget;
+    const { name, value } = e.target;
     this.setState({ [name]: value });
   };
 
+  // Obsługa przesłania formularza
   handleSubmit = (e) => {
     e.preventDefault();
-    this.props.onSubmit(this.state.name, this.state.number); // Wywołanie metody z propsów
-    this.setState({ name: "", number: "" }); // Resetowanie stanu po wysłaniu formularza
+    const { name, number } = this.state;
+
+    // Walidacja pola 'name'
+    const namePattern = /^[a-zA-Z]+\s[a-zA-Z]+$/;
+    if (!namePattern.test(name)) {
+      this.setState({
+        error: "Imię musi zawierać imię i nazwisko oddzielone spacją.",
+      });
+      return;
+    }
+
+    // Walidacja pola 'number'
+    const phoneNumberPattern = /^[0-9+\-()\s]*$/;
+    if (!phoneNumberPattern.test(number)) {
+      this.setState({
+        error: "Numer może zawierać tylko cyfry, spacje, myślniki i nawiasy.",
+      });
+      return;
+    }
+
+    // Wyczyszczenie błędu i przesłanie formularza
+    this.setState({ error: "" });
+    this.props.onSubmit({ name, number });
+    this.setState({ name: "", number: "" });
   };
 
   render() {
-    const { name, number } = this.state;
+    const { name, number, error } = this.state;
+
     return (
-      <form onSubmit={this.handleSubmit}>
-        <label>
-          Name
-          <input
-            type="text"
-            name="name"
-            pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-            required
-            value={name}
-            onChange={this.handleChange}
-          />
-        </label>
-        <label>
-          Number
-          <input
-            type="tel"
-            name="number"
-            pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-            required
-            value={number}
-            onChange={this.handleChange}
-          />
-        </label>
-        <button type="submit">Add contact</button>
-      </form>
+      <div className="ContactForm">
+        <form className="ContactForm-form" onSubmit={this.handleSubmit}>
+          <label>
+            Name
+            <input
+              type="text"
+              name="name"
+              value={name}
+              onChange={this.handleChange}
+              required
+            />
+          </label>
+          <label>
+            Number
+            <input
+              type="text"
+              name="number"
+              value={number}
+              onChange={this.handleChange}
+              required
+            />
+          </label>
+          {error && <p className="error">{error}</p>}
+          <button type="submit">Add contacts</button>
+        </form>
+      </div>
     );
   }
 }
